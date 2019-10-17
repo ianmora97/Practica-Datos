@@ -6,13 +6,26 @@ bin-release/
 
 # Other files and folders
 .settings/
+.vs/
+.x64/
 
 # Executables
 *.swf
 *.air
 *.ipa
 *.apk
+*.exe
 
 # Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
 # should NOT be excluded as they contain compiler settings and other important
 # information for Eclipse / Flash Builder.
+*.vcxproj
+*.filters
+*.user
+*.obj
+*.log
+*.tlog
+*.txt
+*.idb
+*.pdb
+*.ilk
