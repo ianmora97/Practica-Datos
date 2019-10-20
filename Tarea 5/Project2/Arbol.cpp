@@ -35,6 +35,33 @@ void Arbol::insertar(int v){
 		}
 	}
 }
+void Arbol::insertar_postfija(std::string s){
+
+	std::stack<Nodo*> s;
+
+	Nodo* aux = this->root;
+	Nodo* prev = nullptr;
+	/*
+	s.push(aux);
+
+	while (!s.empty()) {
+		Nodo* current = s.top();
+		if (prev == nullptr || (prev->left == current || prev->right == current)) {
+			if (current->left != nullptr) s.push(current->left);
+			else if (current->right != nullptr) s.push(current->right);
+		}
+		else if (prev == current->left) {
+			if (current->right != nullptr) s.push(current->right);
+		}
+		else {
+			std::cout << current->valor << " ";
+			s.pop();
+		}
+
+		prev = current;
+	}
+	*/
+}
 void Arbol::insertar_bst(int val) {
 	root = insertar_bst(root, val);
 }
@@ -65,7 +92,11 @@ void Arbol::mostrar_arbol(Nodo* r, int cont) {//contador ayuda a separar un nodo
 		mostrar_arbol(r->left, cont + 1);
 	}
 }
-
+bool Arbol::buscar(int key) {
+	if (buscar(root, key) != nullptr)
+		return true;
+	return false;
+}
 
 //antes de ingresar el nodo de la izquierda, imprimo la raiz
 //luego ingreso el de la izquierda y asi sucesivamente hasta
@@ -164,23 +195,23 @@ bool Arbol::vacio(){
 }
 void Arbol::PreOrden(Nodo* actual) {
 	if (actual != nullptr) {
-		std::cout << actual->valor << " ";
-		PreOrden(actual->left);
-		PreOrden(actual->right);
+		std::cout << actual->valor << " "; //raiz
+		PreOrden(actual->left); //izquierda
+		PreOrden(actual->right); //derecha
 	}
 }
 void Arbol::EnOrden(Nodo* actual) {
 	if (actual != nullptr) {
-		EnOrden(actual->left);
-		std::cout << actual->valor << " ";
-		EnOrden(actual->right);
+		EnOrden(actual->left); //izquierda
+		std::cout << actual->valor << " ";//raiz
+		EnOrden(actual->right);//derecha
 	}
 }
 void Arbol::PosOrden(Nodo* actual) {
 	if (actual != nullptr) {
-		PosOrden(actual->left);
-		PosOrden(actual->right);
-		std::cout << actual->valor << " ";
+		PosOrden(actual->left);//izquierda
+		PosOrden(actual->right); //derecha
+		std::cout << actual->valor << " ";//raiz
 	}
 }
 void Arbol::orden_nivel(Nodo* root) {
@@ -228,32 +259,23 @@ void Arbol::orden_nivel_reves(Nodo* a) {
 }
 
 
-void Arbol::levelOrderTraversal(Nodo* root) {
-	int level = altura(root);
+void Arbol::orden_por_nivel(Nodo* root) {
+	int level = altura(root) + 1;
 
-	while (printLevel(root, level)) {
-		
-		level++;
-		
+	for (int i = 1; i <= level; i++) {
+		imprimir_orden_nivel(root, i);
 	}
 }
 
-bool Arbol::printLevel(Nodo* root, int level)
-{
+void Arbol::imprimir_orden_nivel(Nodo* root, int level){
 	if (root == nullptr)
-		return false;
-
+		return;
 	if (level == 1)
-	{
 		std::cout << root->valor << " ";
-
-		return true;
+	else {
+		imprimir_orden_nivel(root->left, level - 1);
+		imprimir_orden_nivel(root->right, level - 1);
 	}
-
-	bool left = printLevel(root->left, level - 1);
-	bool right = printLevel(root->right, level - 1);
-
-	return left || right;
 }
 
 int Arbol::altura(Nodo* node) {
@@ -379,17 +401,209 @@ bool Arbol::espejos(Nodo* a, Nodo* b) {
 
 	return  a->valor == b->valor && espejos(a->left, b->right) && espejos(a->right, b->left);
 }
-Nodo* Arbol::Buscar(Nodo* actual, int key) {
+Nodo* Arbol::buscar(Nodo* actual, int key) {
 	if (actual == nullptr)
 		return nullptr;
 
 	if (actual->valor == key)
 		return actual;
 
-	Nodo* tmp = Buscar(actual->left, key);
+	Nodo* tmp = buscar(actual->left, key);
 
 	if (tmp != nullptr)
 		return tmp;
 	else
-		return Buscar(actual->right, key);
+		return buscar(actual->right, key);
+}
+
+Nodo* Arbol::nodo_mas_profundo() {
+	if (root == nullptr)
+		return nullptr;
+
+	std::queue<Nodo*> cola;
+	Nodo* tmp = nullptr;
+
+	cola.push(root);
+	while (!cola.empty()) {
+		tmp = cola.front();
+		cola.pop();
+		if (tmp->left != nullptr)
+			cola.push(tmp->left);
+		if (tmp->right != nullptr)
+			cola.push(tmp->right);
+	}
+	return tmp;
+}
+
+void Arbol::borrar_arbol(Nodo* actual) {
+	if (actual != nullptr) {
+		borrar_arbol(actual->left);
+		borrar_arbol(actual->right);
+		delete actual;
+	}
+}
+
+void Arbol::eliminar_nodo(int llave) {
+
+	Nodo* tmp = buscar(root, llave);
+
+	if (tmp == nullptr)
+		return;
+
+	Nodo* ultimo = nodo_mas_profundo();
+
+	if (root == ultimo) {
+		delete root;
+		root = nullptr;
+		return;
+	}
+
+	if (tmp != ultimo)
+		tmp->valor = ultimo->valor;
+	
+	std::queue<Nodo*> cola;
+	cola.push(root);
+	while (!cola.empty()) {
+		tmp = cola.front();
+		cola.pop();
+		if (tmp->left != nullptr) {
+			if (tmp->left == ultimo) {
+				delete ultimo;
+				tmp->left = nullptr;
+				return;
+			}
+			cola.push(tmp->left);
+		}
+		if (tmp->right != nullptr) {
+			if (tmp->right == ultimo) {
+				delete ultimo;
+				tmp->right = nullptr;
+				return;
+			}
+			cola.push(tmp->right);
+		}
+	}
+}
+
+void Arbol::sucesor_antecesor_hermano(Nodo* root, int key){
+	
+	bool e = buscar(root, key);
+	std::cout << "\nNodo encontrado : " << std::boolalpha << e;
+
+	int level = altura(root);
+	int nivelDeHermanos = 1;
+	for (int i = 1; i <= level; i++) {
+		if (buscar_nodo_por_nivel(root, i, key) == true) {
+			nivelDeHermanos = i;
+			i = level + 1;
+		}
+	}
+	std::cout << "\nHermanos: ";
+	imprimir_orden_nivel(root, nivelDeHermanos);
+}
+
+bool Arbol::buscar_nodo_por_nivel(Nodo* root, int level, int key){
+	if (root == nullptr)
+		return false;
+	if (level == 1) {
+		//std::cout << root->valor << " ";
+		if (root->valor == key) {
+			return true;
+		}
+		//return false;
+	}
+	else {
+		buscar_nodo_por_nivel(root->left, level - 1, key);
+		buscar_nodo_por_nivel(root->right, level - 1, key);
+	}
+}
+
+bool Arbol::son_arboles_iguales(Arbol* a1, Arbol* a2){
+	if (a1->cantidad_nodos(a1->root) == a2->cantidad_nodos(a2->root)) {
+
+		std::queue<Nodo*> recorrer;
+		std::queue<Nodo*> cola1;
+		std::queue<Nodo*> cola2;
+
+		Nodo* temp;
+
+		cola1.push(a1->root);
+		cola2.push(a2->root);
+
+		recorrer.push(a1->root);
+		while (!recorrer.empty()) {
+			temp = recorrer.front();
+			recorrer.pop();
+			if (temp->left) {
+				recorrer.push(temp->left);
+				cola1.push(temp->left);
+			}
+			if (temp->right) {
+				recorrer.push(temp->right);
+				cola1.push(temp->right);
+			}
+		}
+		recorrer.push(a2->root);
+		while (!recorrer.empty()) {
+			temp = recorrer.front();
+			recorrer.pop();
+			if (temp->left) {
+				recorrer.push(temp->left);
+				cola2.push(temp->left);
+			}
+			if (temp->right) {
+				recorrer.push(temp->right);
+				cola2.push(temp->right);
+			}
+		}
+		while (!cola2.empty() && !cola1.empty()) {
+			if ((cola2.front()->valor) != cola1.front()->valor) {
+				return false;
+			}
+			cola1.pop();
+			cola2.pop();
+		}
+		return true;
+	}
+
+	return false;
+}
+
+bool Arbol::compara_bst(Arbol* a){
+
+	std::stack<Nodo*> pila;
+	std::stack<Nodo*> pilaM;
+
+	Nodo* temp = a->root;
+	do {
+		if (!pila.empty() && temp == nullptr) {
+			temp = pila.top();
+			pilaM.push(temp); //ingreso
+			pila.pop();
+			temp = temp->right;
+		}
+		if (temp != nullptr) {
+			pila.push(temp);
+
+			temp = temp->left;
+		}
+
+	} while (!pila.empty() || temp != nullptr);
+	Nodo* aux;
+	int top;
+	while (!pilaM.empty()) {
+		//std::cout << pilaM.top()->valor << " ";
+		aux = pilaM.top();
+		pilaM.pop();
+		if (!pilaM.empty()) {
+			top = pilaM.top()->valor;
+		}
+		else {
+			return true;
+		}
+		if (!(aux->valor > top)) {
+			return false;
+		}
+		
+	}return true;
 }
